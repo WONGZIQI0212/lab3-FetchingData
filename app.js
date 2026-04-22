@@ -46,3 +46,41 @@ const state = {
   forecastLowC:  [],    // 7 daily low temps (Celsius)
   lastCity:      '',    // last searched city (for Retry button)
 };
+
+// List of element IDs that show skeleton animation while loading
+const SKELETON_IDS = [
+  'cityName', 'weatherDesc', 'localTime',
+  'weatherIcon', 'temperature', 'humidity', 'windspeed',
+];
+
+// Adds skeleton shimmer to all placeholders
+function showSkeletons() {
+  SKELETON_IDS.forEach((id) => getEl(id).classList.add('skeleton'));
+
+  document.querySelectorAll('.fc-day, .fc-icon, .fc-high, .fc-low')
+    .forEach((el) => el.classList.add('skeleton'));
+}
+
+// Removes skeleton shimmer after data arrives
+function removeSkeletons() {
+  SKELETON_IDS.forEach((id) => getEl(id).classList.remove('skeleton'));
+
+  document.querySelectorAll('.fc-day, .fc-icon, .fc-high, .fc-low')
+    .forEach((el) => el.classList.remove('skeleton'));
+}
+
+// Builds 7 empty forecast cards on page load
+function buildForecastShells() {
+  els.forecastRow.innerHTML = '';
+
+  for (let i = 0; i < 7; i++) {
+    els.forecastRow.innerHTML += `
+      <div class="forecast-card" id="fc-${i}">
+        <span class="fc-day  skeleton">&#8203;</span>
+        <span class="fc-icon skeleton">&#8203;</span>
+        <span class="fc-high skeleton">&#8203;</span>
+        <span class="fc-low  skeleton">&#8203;</span>
+      </div>
+    `;
+  }
+}
