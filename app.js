@@ -17,3 +17,32 @@ const WMO_CODES = {
 function getWeatherInfo(code) {
   return WMO_CODES[code] || { desc: 'Unknown', icon: '🌡️' };
 } //use Unknown as fallback instead of crashing
+
+// Shorthand so we don't type document.getElementById() every time
+const getEl = (id) => document.getElementById(id);
+
+// All the HTML elements we need to update (grab all at once)
+const els = {
+  cityInput:     getEl('cityInput'),
+  searchBtn:     getEl('searchBtn'),
+  validationMsg: getEl('validationMsg'),
+  errorBanner:   getEl('errorBanner'),
+  errorMsg:      getEl('errorMsg'),
+  retryBtn:      getEl('retryBtn'),
+  cityName:      getEl('cityName'),
+  weatherDesc:   getEl('weatherDesc'),
+  localTime:     getEl('localTime'),
+  weatherIcon:   getEl('weatherIcon'),
+  temperature:   getEl('temperature'),
+  humidity:      getEl('humidity'),
+  windspeed:     getEl('windspeed'),
+  forecastRow:   getEl('forecastRow'),
+};
+
+// Stores data we need to remember between functions
+const state = {
+  tempC:         null,  // current temperature in Celsius //null means not loaded yet
+  forecastHighC: [],    // 7 daily high temps (Celsius)
+  forecastLowC:  [],    // 7 daily low temps (Celsius)
+  lastCity:      '',    // last searched city (for Retry button)
+};
