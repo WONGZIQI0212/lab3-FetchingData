@@ -84,3 +84,53 @@ function buildForecastShells() {
     `;
   }
 }
+
+// FETCH API CHAIN: main task 2 functions to fet weather data
+
+async function geocodeCity(cityName) {
+
+  // Build the URL with the city name safely encoded
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`;
+
+  // AbortController lets us cancel the request after 10 seconds
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    // Make the request
+    const response = await fetch(url, { signal: controller.signal });
+
+    // Cancel the 10s timer — response came in time
+    clearTimeout(timeoutId);
+
+    // If server replied with an error (404, 500 etc.), throw it
+    if (!response.ok) {
+      throw new Error(`Geocoding failed: HTTP ${response.status}`);
+    }
+
+    // Convert the response to a JavaScript object
+    const data = await response.json();
+
+    // If results array is empty, city was not found
+    if (!data.results || data.results.length === 0) {
+      showError(`City "${cityName}" not found. Try another name.`);
+      return null; // stop here, do NOT throw
+    }
+
+    // Pull out what we need from the first result
+    const { latitude, longitude, timezone, name, country } = data.results[0];
+
+    return { latitude, longitude, timezone, displayName: `${name}, ${country}` };
+
+  } catch (err) {
+    clearTimeout(timeoutId);
+
+    if (err.name === 'AbortError') {
+      showError('Request timed out after 10 seconds. Check your internet.');
+    } else {
+      showError(err.message);
+    }
+
+    return null;
+  }
+}
