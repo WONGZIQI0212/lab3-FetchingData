@@ -10,6 +10,24 @@
 
   <div class="app-wrapper">
 
+  <!-- HEADER -->
+  <header class="app-header">
+    <h1 class="logo">⛅ WeatherNow</h1>
+  </header>
+
+  <!-- SEARCH BAR -->
+  <section class="search-section">
+
+    <div class="search-bar">
+      <input type="text" id="cityInput" placeholder="Search a city… e.g. Kuala Lumpur" />
+      <button id="searchBtn">Search</button>
+    </div>
+
+    <!-- shows if user types less than 2 characters -->
+    <p id="validationMsg" class="validation-msg hidden"></p>
+
+  </section>
+
   </div>
 
   <script src="app.js"></script>
