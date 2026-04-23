@@ -180,3 +180,62 @@ async function fetchWeather(lat, lon) {
   }
 }
 
+// FILL THE CARDS WITH DATA
+
+function populateUI(displayName, weatherData) {
+
+  const cw     = weatherData.current_weather; // current conditions
+  const daily  = weatherData.daily;           // 7-day arrays
+  const hourly = weatherData.hourly;          // hourly arrays
+
+  // Look up the weather code to get text + emoji
+  const info = getWeatherInfo(cw.weathercode);
+
+  // Save Celsius values to state (needed later for C/F toggle)
+  state.tempC         = cw.temperature;
+  state.forecastHighC = [...daily.temperature_2m_max];
+  state.forecastLowC  = [...daily.temperature_2m_min];
+
+  // Fill the current weather card
+  els.cityName.textContent    = displayName;
+  els.weatherIcon.textContent = info.icon;
+  els.weatherDesc.textContent = info.desc;
+  els.temperature.textContent = `${Math.round(cw.temperature)}°C`;
+
+  // Find which hourly index matches "right now"
+  const nowIdx = findClosestHourIndex(hourly.time);
+  els.humidity.textContent  = `${hourly.relativehumidity_2m[nowIdx]}%`;
+  els.windspeed.textContent = `${hourly.windspeed_10m[nowIdx]} km/h`;
+
+  // Fill the 7 forecast cards
+  for (let i = 0; i < 7; i++) {
+    const card = document.getElementById(`fc-${i}`);
+
+    const dayName = new Date(daily.time[i])
+      .toLocaleDateString('en-US', { weekday: 'short' });
+
+    const fcInfo = getWeatherInfo(daily.weathercode[i]);
+
+    card.querySelector('.fc-day' ).textContent = dayName;
+    card.querySelector('.fc-icon').textContent = fcInfo.icon;
+    card.querySelector('.fc-high').textContent = `${Math.round(daily.temperature_2m_max[i])}°C`;
+    card.querySelector('.fc-low' ).textContent = `${Math.round(daily.temperature_2m_min[i])}°C`;
+  }
+
+  // Remove all skeleton shimmer — data is ready!
+  removeSkeletons();
+}
+
+// Helper: find the hourly index closest to the current time
+function findClosestHourIndex(timeArray) {
+  const now  = Date.now();
+  let best   = 0;
+  let diff   = Infinity;
+
+  timeArray.forEach((t, i) => {
+    const d = Math.abs(new Date(t).getTime() - now);
+    if (d < diff) { diff = d; best = i; }
+  });
+
+  return best;
+}
