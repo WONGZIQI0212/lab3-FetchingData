@@ -308,9 +308,33 @@ function hideError() {
   els.errorBanner.classList.add('hidden');
 }
 
+// Helper functions
+
+function showValidation(msg) {
+  // fills the <p id="validationMsg"> and makes it visible
+  els.validationMsg.textContent = msg;
+  els.validationMsg.classList.remove('hidden');
+}
+
+function hideValidation() {
+  // hides it again once user types something valid
+  els.validationMsg.classList.add('hidden');
+}
+
 // The main function — runs when Search is clicked
 async function handleSearch() {
   const city = els.cityInput.value.trim();
+
+    // ── VALIDATION  ──
+  if (city.length === 0) {
+    showValidation('Please enter a city name.');
+    return;
+  }
+  if (city.length < 2) {
+    showValidation('City name must be at least 2 characters.');
+    return;
+  }
+  hideValidation(); // clear any old message
 
   hideError();
   showSkeletons();
@@ -327,10 +351,10 @@ async function handleSearch() {
 
   // Step C: fill the UI
   populateUI(geo.displayName, weather);
-}
 
-// fetch local time
+  // fetch local time
 fetchLocalTime(geo.timezone);
+}
 
 // Runs once when the page first loads
 document.addEventListener('DOMContentLoaded', () => {
