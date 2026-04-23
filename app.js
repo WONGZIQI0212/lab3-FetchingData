@@ -321,6 +321,26 @@ function hideValidation() {
   els.validationMsg.classList.add('hidden');
 }
 
+// Debounce
+
+function debounce(fn, delay) {
+  // timer is remembered between calls because of closure
+  let timer;
+
+  return function (...args) {
+    // cancel the previous countdown every time this runs
+    clearTimeout(timer);
+
+    // start a fresh countdown
+    timer = setTimeout(() => {
+      fn.apply(this, args);
+    }, delay);
+  };
+}
+
+// Wrap handleSearch with a 500ms debounce
+const debouncedSearch = debounce(handleSearch, 500);
+
 // The main function — runs when Search is clicked
 async function handleSearch() {
   const city = els.cityInput.value.trim();
@@ -367,6 +387,9 @@ document.addEventListener('DOMContentLoaded', () => {
   els.cityInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') handleSearch();
   });
+
+  // Debounce
+  els.cityInput.addEventListener('input', debouncedSearch);
 
   // Retry button re-runs last search
   els.retryBtn.addEventListener('click', () => {
