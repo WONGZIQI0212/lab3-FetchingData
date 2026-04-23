@@ -239,3 +239,58 @@ function findClosestHourIndex(timeArray) {
 
   return best;
 }
+
+// Wire everything together
+
+// Shows the red error banner
+function showError(message) {
+  els.errorMsg.textContent = message;
+  els.errorBanner.classList.remove('hidden');
+}
+
+// Hides the red error banner
+function hideError() {
+  els.errorBanner.classList.add('hidden');
+}
+
+// The main function — runs when Search is clicked
+async function handleSearch() {
+  const city = els.cityInput.value.trim();
+
+  hideError();
+  showSkeletons();
+
+  state.lastCity = city;
+
+  // Step A: get coordinates
+  const geo = await geocodeCity(city);
+  if (!geo) { removeSkeletons(); return; }
+
+  // Step B: get weather using those coordinates
+  const weather = await fetchWeather(geo.latitude, geo.longitude);
+  if (!weather) { removeSkeletons(); return; }
+
+  // Step C: fill the UI
+  populateUI(geo.displayName, weather);
+}
+
+// Runs once when the page first loads
+document.addEventListener('DOMContentLoaded', () => {
+  buildForecastShells();  // create the 7 skeleton cards
+
+  // Search button click
+  els.searchBtn.addEventListener('click', handleSearch);
+
+  // Pressing Enter also triggers search
+  els.cityInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleSearch();
+  });
+
+  // Retry button re-runs last search
+  els.retryBtn.addEventListener('click', () => {
+    if (state.lastCity) {
+      els.cityInput.value = state.lastCity;
+      handleSearch();
+    }
+  });
+});
