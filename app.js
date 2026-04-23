@@ -244,6 +244,57 @@ function findClosestHourIndex(timeArray) {
   return best;
 }
 
+// FETCH LOCAL TIME
+
+function fetchLocalTime(timezone) {
+
+  // Build the WorldTimeAPI URL using the timezone string
+  // Example: timezone = "Asia/Kuala_Lumpur"
+  // URL becomes: https://worldtimeapi.org/api/timezone/Asia/Kuala_Lumpur
+  const url = `https://worldtimeapi.org/api/timezone/${timezone}`;
+
+  jQ.getJSON(url)
+
+    .done(function (data) {
+      // .done() runs when the request SUCCEEDS
+
+      // data.datetime looks like: "2024-07-01T14:35:22.123+08:00"
+      // We convert it to a Date object, then format it nicely
+      const dt   = new Date(data.datetime);
+      const time = dt.toLocaleTimeString('en-US', {
+        hour:   '2-digit',
+        minute: '2-digit',
+      });
+
+      // Show it in the weather card
+      els.localTime.textContent = `🕐 Local time: ${time}`;
+    })
+
+    .fail(function () {
+      // .fail() runs when the request FAILS
+      // (bad internet, timezone not found, API down)
+
+      // Fall back to the browser's own clock
+      const time = new Date().toLocaleTimeString('en-US', {
+        hour:   '2-digit',
+        minute: '2-digit',
+      });
+
+      els.localTime.textContent = `🕐 Local time: ${time} (device)`;
+    })
+
+    .always(function () {
+      // .always() runs whether it succeeded OR failed
+      // Required by the lab: log a timestamp to the console
+      console.log(`[WeatherNow] WorldTimeAPI call finished at ${new Date().toISOString()}`);
+    });
+
+}
+
+
+
+
+
 // Wire everything together
 
 // Shows the red error banner
@@ -277,6 +328,9 @@ async function handleSearch() {
   // Step C: fill the UI
   populateUI(geo.displayName, weather);
 }
+
+// fetch local time
+fetchLocalTime(geo.timezone);
 
 // Runs once when the page first loads
 document.addEventListener('DOMContentLoaded', () => {
