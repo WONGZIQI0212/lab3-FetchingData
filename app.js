@@ -1,3 +1,6 @@
+(function (){
+  'use strict';
+
 const WMO_CODES = {
   0:  { desc: 'Clear Sky',           icon: '☀️' },
   1:  { desc: 'Mainly Clear',        icon: '🌤️' },
@@ -399,3 +402,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+})();
