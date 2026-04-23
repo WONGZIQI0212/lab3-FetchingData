@@ -87,6 +87,8 @@ function buildForecastShells() {
 
 // FETCH API CHAIN: main task 2 functions to fet weather data
 
+//TURN CITYNAME INTO LAT/LON
+
 async function geocodeCity(cityName) {
 
   // Build the URL with the city name safely encoded
@@ -134,3 +136,47 @@ async function geocodeCity(cityName) {
     return null;
   }
 }
+
+// FETCH WEATHER
+
+async function fetchWeather(lat, lon) {
+
+  // Build URL with all the data fields we want
+  const params = new URLSearchParams({
+    latitude:        lat,
+    longitude:       lon,
+    current_weather: true,
+    hourly:          'temperature_2m,relativehumidity_2m,windspeed_10m',
+    daily:           'temperature_2m_max,temperature_2m_min,weathercode',
+    timezone:        'auto',
+    forecast_days:   7,
+  });
+
+  const url = `https://api.open-meteo.com/v1/forecast?${params}`;
+
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Weather API failed: HTTP ${response.status}`);
+    }
+
+    return await response.json();
+
+  } catch (err) {
+    clearTimeout(timeoutId);
+
+    if (err.name === 'AbortError') {
+      showError('Request timed out after 10 seconds.');
+    } else {
+      showError(err.message);
+    }
+
+    return null;
+  }
+}
+
