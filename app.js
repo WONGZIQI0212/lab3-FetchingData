@@ -39,6 +39,10 @@ const els = {
   forecastRow:   getEl('forecastRow'),
 };
 
+// jQuery is loaded via CDN in index.html
+// alias it to jQ so it doesn't clash with getEl shorthand
+const jQ = window.jQuery;
+
 // Stores data we need to remember between functions
 const state = {
   tempC:         null,  // current temperature in Celsius //null means not loaded yet
