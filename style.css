@@ -210,3 +210,47 @@ body {
 
 /* Utility class — display:none hides element completely */
 .hidden { display: none !important; }
+
+
+/*   ==== BONUS ====  */
+/*   C°/F° toggle button    */
+
+.toggle-btn {
+  background: var(--surface) !important;
+  border: 1px solid #30363d !important;
+  color: var(--accent) !important;
+  min-width: 48px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.toggle-btn:hover {
+  border-color: var(--accent) !important;
+  opacity: 1 !important;
+}
+
+/* BONUS: Recent searches history chips */
+.history-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  min-height: 0;
+}
+
+.history-chip {
+  background: var(--surface);
+  border: 1px solid #30363d;
+  border-radius: 20px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 4px 12px;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.history-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

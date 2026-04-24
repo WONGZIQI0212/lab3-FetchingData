@@ -40,6 +40,8 @@ const els = {
   humidity:      getEl('humidity'),
   windspeed:     getEl('windspeed'),
   forecastRow:   getEl('forecastRow'),
+  toggleBtn:     getEl('toggleBtn'),
+  historyRow:    getEl('historyRow'),
 };
 
 // jQuery is loaded via CDN in index.html
@@ -52,6 +54,7 @@ const state = {
   forecastHighC: [],    // 7 daily high temps (Celsius)
   forecastLowC:  [],    // 7 daily low temps (Celsius)
   lastCity:      '',    // last searched city (for Retry button)
+  isCelsius:     true,
 };
 
 // List of element IDs that show skeleton animation while loading
@@ -207,7 +210,7 @@ function populateUI(displayName, weatherData) {
   els.cityName.textContent    = displayName;
   els.weatherIcon.textContent = info.icon;
   els.weatherDesc.textContent = info.desc;
-  els.temperature.textContent = `${Math.round(cw.temperature)}°C`;
+  els.temperature.textContent = formatTemp(cw.temperature);
 
   // Find which hourly index matches "right now"
   const nowIdx = findClosestHourIndex(hourly.time);
@@ -225,8 +228,8 @@ function populateUI(displayName, weatherData) {
 
     card.querySelector('.fc-day' ).textContent = dayName;
     card.querySelector('.fc-icon').textContent = fcInfo.icon;
-    card.querySelector('.fc-high').textContent = `${Math.round(daily.temperature_2m_max[i])}°C`;
-    card.querySelector('.fc-low' ).textContent = `${Math.round(daily.temperature_2m_min[i])}°C`;
+    card.querySelector('.fc-high').textContent = formatTemp(daily.temperature_2m_max[i]);
+    card.querySelector('.fc-low' ).textContent = formatTemp(daily.temperature_2m_min[i]);
   }
 
   // Remove all skeleton shimmer — data is ready!
@@ -261,8 +264,7 @@ function fetchLocalTime(timezone) {
     .done(function (data) {
       // .done() runs when the request SUCCEEDS
 
-      // data.datetime looks like: "2024-07-01T14:35:22.123+08:00"
-      // We convert it to a Date object, then format it nicely
+      // convert it to a Date object, then format it nicely
       const dt   = new Date(data.datetime);
       const time = dt.toLocaleTimeString('en-US', {
         hour:   '2-digit',
@@ -275,7 +277,7 @@ function fetchLocalTime(timezone) {
 
     .fail(function () {
       // .fail() runs when the request FAILS
-      // (bad internet, timezone not found, API down)
+      // :bad internet, timezone not found, API down
 
       // Fall back to the browser's own clock
       const time = new Date().toLocaleTimeString('en-US', {
@@ -288,15 +290,11 @@ function fetchLocalTime(timezone) {
 
     .always(function () {
       // .always() runs whether it succeeded OR failed
-      // Required by the lab: log a timestamp to the console
+      // log a timestamp to the console
       console.log(`[WeatherNow] WorldTimeAPI call finished at ${new Date().toISOString()}`);
     });
 
 }
-
-
-
-
 
 // Wire everything together
 
@@ -341,6 +339,73 @@ function debounce(fn, delay) {
   };
 }
 
+// ── BONUS: C°/F° TOGGLE ──────────────────────────────
+
+function toFahrenheit(c) {
+  return (c * 9) / 5 + 32;
+}
+
+function formatTemp(celsius) {
+  if (state.isCelsius) {
+    return `${Math.round(celsius)}°C`;
+  }
+  return `${Math.round(toFahrenheit(celsius))}°F`;
+}
+
+function applyUnitToggle() {
+  if (state.tempC === null) return; // no data loaded yet
+
+  els.toggleBtn.textContent = state.isCelsius ? '°F' : '°C';
+  els.temperature.textContent = formatTemp(state.tempC);
+
+  for (let i = 0; i < 7; i++) {
+    const card = document.getElementById(`fc-${i}`);
+    if (!card) continue;
+    card.querySelector('.fc-high').textContent = formatTemp(state.forecastHighC[i]);
+    card.querySelector('.fc-low' ).textContent = formatTemp(state.forecastLowC[i]);
+  }
+}
+
+// ── BONUS: RECENT SEARCHES ───────────────────────────
+
+function loadHistory() {
+  try {
+    return JSON.parse(localStorage.getItem('weathernow_history') || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function saveToHistory(city) {
+  let history = loadHistory();
+  history = history.filter((c) => c.toLowerCase() !== city.toLowerCase()); // remove duplicate
+  history.unshift(city);          // add to front
+  history = history.slice(0, 5); // keep last 5 only
+  localStorage.setItem('weathernow_history', JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory() {
+  const history = loadHistory();
+  if (!els.historyRow) return;
+
+  if (history.length === 0) {
+    els.historyRow.innerHTML = '';
+    return;
+  }
+
+  els.historyRow.innerHTML = history
+    .map((city) => `<button class="history-chip" data-city="${city}">${city}</button>`)
+    .join('');
+
+  els.historyRow.querySelectorAll('.history-chip').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      els.cityInput.value = chip.dataset.city;
+      handleSearch();
+    });
+  });
+}
+
 // Wrap handleSearch with a 500ms debounce
 const debouncedSearch = debounce(handleSearch, 500);
 
@@ -375,6 +440,9 @@ async function handleSearch() {
   // Step C: fill the UI
   populateUI(geo.displayName, weather);
 
+  // BONUS: 
+  saveToHistory(geo.displayName);
+
   // fetch local time
 fetchLocalTime(geo.timezone);
 }
@@ -401,6 +469,18 @@ document.addEventListener('DOMContentLoaded', () => {
       handleSearch();
     }
   });
+
+  // BONUS
+
+  // Load history chips on startup
+  renderHistory();
+
+  // Wire up the toggle button
+  els.toggleBtn.addEventListener('click', () => {
+    state.isCelsius = !state.isCelsius;
+    applyUnitToggle();
+  });
+
 });
 
 })();
