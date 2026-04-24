@@ -16,7 +16,7 @@
   </header>
 
   <!-- SEARCH BAR -->
-  <section class="search-section">
+  <div class="search-section">
 
     <div class="search-bar">
       <input type="text" id="cityInput" placeholder="Search a city… e.g. Kuala Lumpur" />
@@ -24,6 +24,11 @@
        <!-- BONUS -->
       <button id="toggleBtn" class="toggle-btn">°F</button>
     </div>
+
+    <!-- shows if user types less than 2 characters -->
+    <p id="validationMsg" class="validation-msg hidden"></p>
+    <!-- BONUS -->
+    <div id="historyRow" class="history-row"></div>
 
     <!-- ERROR BANNER (hidden until something goes wrong) -->
   <div id="errorBanner" class="error-banner hidden">
@@ -66,12 +71,7 @@
     </div>
   </section>
 
-    <!-- shows if user types less than 2 characters -->
-    <p id="validationMsg" class="validation-msg hidden"></p>
-    <!-- BONUS -->
-    <div id="historyRow" class="history-row"></div>
-
-  </section>
+  </div>
 
   </div>
 
